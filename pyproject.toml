@@ -1,0 +1,44 @@
+[tool.poetry]
+name = "sisclinic"
+version = "0.1.0"
+description = "Booking web app"
+authors = ["GMQ"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+sqlalchemy = "^2.0.36"
+python-dotenv = "^1.0.1"
+fastapi = {extras = ["standard"], version = "^0.115.6"}
+psycopg2-binary = "^2.9.10"
+pytask = "^0.5.1"
+taskipy = "^1.14.1"
+alembic = "^1.14.0"
+pwdlib = "^0.2.1"
+pyjwt = "^2.10.1"
+pydantic-settings = "^2.6.1"
+
+[tool.taskipy.tasks]
+run = 'fastapi dev sisclinic/main.py'
+pre_test = 'task lint'
+test = 'pytest --cov=sisclinic -vv'
+post_test = 'coverage html'
+lint = 'ruff check . ; ruff check . --diff'
+format = 'ruff check . --fix ; ruff format'
+
+[tool.ruff.lint]
+preview = true
+select = ['I','F','E','W','PL','PT']
+
+[tool.ruff]
+line-length = 79
+extend-exclude = ['migrations']
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8.3"
+pytest = "^8.3.4"
+coverage = "^7.6.9"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
