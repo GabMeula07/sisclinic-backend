@@ -4,18 +4,16 @@ from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
-
 class User(Base):
     __tablename__ = "user"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    first_name = Column(String, unique=True, nullable=False)
-    last_name = Column(String, unique=True, nullable=False)
+    first_name = Column(String,  nullable=False)
+    last_name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-
-    addresses = relationship("Address", back_populates="user")
-    addresses = relationship("ProfessionalRecord", back_populates="user")
+    address = relationship("Address", back_populates="user", uselist=False)
+    professional_record = relationship("ProfessionalRecord", back_populates="user", uselist=False)
 
 
 class Address(Base):
@@ -43,4 +41,6 @@ class ProfessionalRecord(Base):
     occupation = Column(String, nullable=False)
     specialization = Column(String, nullable=False)
     number_record = Column(String, nullable=False)
+
+
     user = relationship("User", back_populates="professional_record")
