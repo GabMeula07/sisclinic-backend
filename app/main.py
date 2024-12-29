@@ -7,10 +7,29 @@ from http import HTTPStatus
 from fastapi import Depends, FastAPI, Form, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.cruds import create_user, get_user_by_email, update_user
-from app.database import get_session  
-from app.schemas import TokenSchema, UserPublic, UserSchema, PasswordResetRequest, PasswordResetConfirm
-from app.security import create_access_token, get_current_user, verify_password, create_reset_token, verify_reset_token
+from app.cruds import (
+    create_professional,
+    create_user,
+    get_professional,
+    get_user_by_email,
+    update_user,
+)
+from app.database import get_session
+from app.schemas import (
+    PasswordResetConfirm,
+    PasswordResetRequest,
+    ProfileSchema,
+    TokenSchema,
+    UserPublic,
+    UserSchema,
+)
+from app.security import (
+    create_access_token,
+    create_reset_token,
+    get_current_user,
+    verify_password,
+    verify_reset_token,
+)
 from app.services import send_reset_email
 
 app = FastAPI()
@@ -45,40 +64,61 @@ async def login_user(
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+@app.get("/users/profile", response_model=ProfileSchema)
+def create_professional_profile(
+    db_session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
+    profile = get_professional(db_session, current_user)
+    return profile
+
+
+@app.post("/users/profile", response_model=ProfileSchema)
+def create_professional_profile(
+    data: ProfileSchema,
+    db_session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+):
+    profile = create_professional(db_session, current_user, data)
+    return profile
+
+
 @app.get("/users/me")
 def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
+
 @app.post("/password-reset-request")
 def password_reset_request(
-    request: PasswordResetRequest,
-    db_session: Session = Depends(get_session)
+    request: PasswordResetRequest, db_session: Session = Depends(get_session)
 ):
-
     user = get_user_by_email(session=db_session, email=request.email)
     token = create_reset_token({"sub": user.email})
     send_reset_email(user.email, token)
 
     return {"message": "Token enviado para o e-mail informado"}
 
+
 @app.post("/password-reset")
 def password_reset(
-    request: PasswordResetConfirm,
-    db_session: Session = Depends(get_session)
+    request: PasswordResetConfirm, db_session: Session = Depends(get_session)
 ):
     # Verificar token
     email = verify_reset_token(request.token)
     if email is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token inválido ou expirado"
+            detail="Token inválido ou expirado",
         )
 
     # Atualizar senha no banco
-    user =  get_user_by_email(session=db_session, email=email)
-    update_user(session=db_session, user=user, data = {'password': request.new_password} )
+    user = get_user_by_email(session=db_session, email=email)
+    update_user(
+        session=db_session, user=user, data={"password": request.new_password}
+    )
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not Found")
-
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not Found"
+        )
 
     return {"message": "Senha atualizada com sucesso"}
