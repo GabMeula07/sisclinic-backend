@@ -8,7 +8,7 @@ from app.models import ProfessionalRecord, User
 from app.security import get_password_hash
 
 
-def create_user(session, user):
+def create_user(session: Session, user: dict):
     db_user = session.scalar(select(User).where(User.email == user.email))
     if db_user:
         raise HTTPException(
@@ -30,11 +30,6 @@ def create_user(session, user):
 
 def get_user_by_email(session: Session, email: str):
     db_user = session.scalar(select(User).where(User.email == email))
-
-    if db_user is None:
-        raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail="User not Found"
-        )
     return db_user
 
 
@@ -71,8 +66,8 @@ def create_professional(session: Session, user, data: dict):
         number=data.number,
         not_number=data.not_number,
         neighborhood=data.neighborhood,
-        city = data.city,
-        cep=data.cep
+        city=data.city,
+        cep=data.cep,
     )
     update_user(session, user, {"active": True})
     session.add(db_profile)

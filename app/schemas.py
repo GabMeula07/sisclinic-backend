@@ -21,6 +21,7 @@ class ProfileSchema(BaseModel):
     city: str
     cep: str
 
+
 class UserPublic(BaseModel):
     id: int
     email: str

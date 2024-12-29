@@ -4,15 +4,18 @@ sys.path.append("/home/gabrielmeula/projects/sisclinic_simplified")
 
 from http import HTTPStatus
 
-from fastapi import Depends, FastAPI, Form, HTTPException, status
+from fastapi import Depends, FastAPI, Form
 from sqlalchemy.orm import Session
 
+from app.controllers import (
+    create_user_controller,
+    get_professional_profile_controller,
+    login_user_controller,
+    password_reset_controller,
+    password_reset_request_controller,
+)
 from app.cruds import (
     create_professional,
-    create_user,
-    get_professional,
-    get_user_by_email,
-    update_user,
 )
 from app.database import get_session
 from app.schemas import (
@@ -24,22 +27,18 @@ from app.schemas import (
     UserSchema,
 )
 from app.security import (
-    create_access_token,
-    create_reset_token,
     get_current_user,
-    verify_password,
-    verify_reset_token,
 )
-from app.services import send_reset_email
 
 app = FastAPI()
 
 
 # register endpoint
 @app.post("/user/", response_model=UserPublic, status_code=HTTPStatus.CREATED)
-def post_user(user: UserSchema, db_session: Session = Depends(get_session)):
-    db_user = create_user(session=db_session, user=user)
-    return db_user
+def register_user(
+    user: UserSchema, db_session: Session = Depends(get_session)
+):
+    return create_user_controller(session=db_session, user=user)
 
 
 @app.post("/token", response_model=TokenSchema)
@@ -48,28 +47,20 @@ async def login_user(
     password: str = Form(...),
     db_session: Session = Depends(get_session),
 ):
-    user = get_user_by_email(session=db_session, email=username)
-    if user is None:
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Invalid Email or Password",
-        )
-
-    if not verify_password(password, user.password):
-        raise HTTPException(
-            status_code=HTTPStatus.UNAUTHORIZED,
-            detail="Invalid Email or Password",
-        )
-    access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    result = login_user_controller(
+        username=username, password=password, session=db_session
+    )
+    return result
 
 
 @app.get("/users/profile", response_model=ProfileSchema)
-def create_professional_profile(
+def get_professional_profile(
     db_session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    profile = get_professional(db_session, current_user)
+    profile = get_professional_profile_controller(
+        session=db_session, current_user=current_user
+    )
     return profile
 
 
@@ -79,7 +70,9 @@ def create_professional_profile(
     db_session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    profile = create_professional(db_session, current_user, data)
+    profile = create_professional(
+        session=db_session, current_user=current_user, data=data
+    )
     return profile
 
 
@@ -92,33 +85,13 @@ def read_users_me(current_user: dict = Depends(get_current_user)):
 def password_reset_request(
     request: PasswordResetRequest, db_session: Session = Depends(get_session)
 ):
-    user = get_user_by_email(session=db_session, email=request.email)
-    token = create_reset_token({"sub": user.email})
-    send_reset_email(user.email, token)
-
-    return {"message": "Token enviado para o e-mail informado"}
+    return password_reset_request_controller(
+        request=request, session=db_session
+    )
 
 
 @app.post("/password-reset")
 def password_reset(
     request: PasswordResetConfirm, db_session: Session = Depends(get_session)
 ):
-    # Verificar token
-    email = verify_reset_token(request.token)
-    if email is None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Token inválido ou expirado",
-        )
-
-    # Atualizar senha no banco
-    user = get_user_by_email(session=db_session, email=email)
-    update_user(
-        session=db_session, user=user, data={"password": request.new_password}
-    )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not Found"
-        )
-
-    return {"message": "Senha atualizada com sucesso"}
+    password_reset_controller(request=request, session=db_session)
