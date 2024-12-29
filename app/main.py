@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.cruds import create_user, get_user_by_email
 from app.database import get_session
-from app.schemas import UserPublic, UserSchema
+from app.schemas import TokenSchema, UserPublic, UserSchema
 from app.security import create_access_token, get_current_user, verify_password
 
 app = FastAPI()
@@ -22,7 +22,7 @@ def post_user(user: UserSchema, db_session: Session = Depends(get_session)):
     return db_user
 
 
-@app.post("/token")
+@app.post("/token", response_model=TokenSchema)
 async def login_user(
     username: str = Form(...),
     password: str = Form(...),
