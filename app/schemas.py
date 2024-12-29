@@ -20,3 +20,11 @@ class UserListSchema(BaseModel):
 class TokenSchema(BaseModel):
     access_token: str
     token_type: str
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+
+# Requisição para redefinir senha
+class PasswordResetConfirm(BaseModel):
+    token: str
+    new_password: str

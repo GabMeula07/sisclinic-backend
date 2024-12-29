@@ -31,3 +31,15 @@ def create_user(session, user):
 def get_user_by_email(session: Session, email: str):
     db_user = session.scalar(select(User).where(User.email == email))
     return db_user
+
+def update_user(session: Session, user: User, data: dict):
+    for key, value in data.items():
+        if key == 'password':
+            setattr(user, key, get_password_hash(value))
+        else: 
+            setattr(user, key, value)
+
+    session.commit()
+    session.refresh(user)
+    return user    
+
