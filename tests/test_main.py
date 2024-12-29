@@ -118,5 +118,108 @@ def test_auth_users_me(client):
     response = client.get("/users/me", headers=headers)
 
     assert response.status_code == HTTPStatus.OK
-    assert response.json()["sub"] == "teste@gmail.com"
-    assert "exp" in response.json()
+    assert response.json()["id"] == 1
+    assert response.json()["email"] == "teste@gmail.com"
+
+
+def test_create_profile(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    profile = {
+        "birth": "2002-12-29",
+        "cpf": "string",
+        "occupation": "string",
+        "specialization": "string",
+        "number_record": "string",
+        "street": "string",
+        "number": 0,
+        "not_number": True,
+        "neighborhood": "string",
+        "city": "string",
+        "cep": "string",
+    }
+    response = client.post("/users/profile", headers=headers, json=profile)
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == profile
+
+
+def test_create_profile_err_exists(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    profile = {
+        "birth": "2002-12-29",
+        "cpf": "string",
+        "occupation": "string",
+        "specialization": "string",
+        "number_record": "string",
+        "street": "string",
+        "number": 0,
+        "not_number": True,
+        "neighborhood": "string",
+        "city": "string",
+        "cep": "string",
+    }
+    response = client.post("/users/profile", headers=headers, json=profile)
+    response = client.post("/users/profile", headers=headers, json=profile)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json()["detail"] == "Profile already exists"
+
+
+def test_get_profile(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    profile = {
+        "birth": "2002-12-29",
+        "cpf": "string",
+        "occupation": "string",
+        "specialization": "string",
+        "number_record": "string",
+        "street": "string",
+        "number": 0,
+        "not_number": True,
+        "neighborhood": "string",
+        "city": "string",
+        "cep": "string",
+    }
+    response = client.post("/users/profile", headers=headers, json=profile)
+    response = client.get("/users/profile", headers=headers)
+
+    assert response.status_code == HTTPStatus.OK
+    assert response.json() == profile

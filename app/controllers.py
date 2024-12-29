@@ -89,9 +89,7 @@ def password_reset_request_controller(
     return {"message": "Token sent to the provided email address"}
 
 
-def password_reset_controller(
-    request: PasswordResetConfirm, session: Session
-):
+def password_reset_controller(request: PasswordResetConfirm, session: Session):
     # Verify token
     email = verify_reset_token(request.token)
     if email is None:

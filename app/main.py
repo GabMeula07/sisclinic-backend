@@ -8,14 +8,12 @@ from fastapi import Depends, FastAPI, Form
 from sqlalchemy.orm import Session
 
 from app.controllers import (
+    create_professional_profile_controller,
     create_user_controller,
     get_professional_profile_controller,
     login_user_controller,
     password_reset_controller,
     password_reset_request_controller,
-)
-from app.cruds import (
-    create_professional,
 )
 from app.database import get_session
 from app.schemas import (
@@ -70,13 +68,13 @@ def create_professional_profile(
     db_session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
 ):
-    profile = create_professional(
+    profile = create_professional_profile_controller(
         session=db_session, current_user=current_user, data=data
     )
     return profile
 
 
-@app.get("/users/me")
+@app.get("/users/me", response_model=UserPublic)
 def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
