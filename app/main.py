@@ -14,12 +14,15 @@ from app.controllers import (
     login_user_controller,
     password_reset_controller,
     password_reset_request_controller,
+    creating_schedule_controller
 )
 from app.database import get_session
 from app.schemas import (
     PasswordResetConfirm,
     PasswordResetRequest,
     ProfileSchema,
+    SchedulerRequestSchema,
+    SchedulerListSchema,
     TokenSchema,
     UserPublic,
     UserSchema,
@@ -93,3 +96,13 @@ def password_reset(
     request: PasswordResetConfirm, db_session: Session = Depends(get_session)
 ):
     password_reset_controller(request=request, session=db_session)
+
+
+@app.post("/rooms", response_model=SchedulerListSchema)
+def rooms_scheduler(
+    json: SchedulerRequestSchema,
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+): 
+    response = creating_schedule_controller(data=json, session=session, current_user=current_user)
+    return response

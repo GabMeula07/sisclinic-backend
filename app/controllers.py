@@ -13,6 +13,7 @@ from app.cruds import (
     get_professional,
     get_user_by_email,
     update_user,
+    create_schedule
 )
 from app.schemas import (
     PasswordResetConfirm,
@@ -110,3 +111,13 @@ def password_reset_controller(request: PasswordResetConfirm, session: Session):
     )
 
     return {"message": "Password successfully updated"}
+
+
+def creating_schedule_controller(
+    data: dict, session: Session, current_user
+): 
+    scheduled = create_schedule(data=data, session=session, current_user=current_user)
+    return{
+        "scheduled": [scheduled],
+        "msg": "OK"
+    }

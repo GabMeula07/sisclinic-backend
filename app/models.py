@@ -16,9 +16,7 @@ class User(Base):
     professional_record = relationship(
         "ProfessionalRecord", back_populates="user", uselist=False
     )
-    scheduler = relationship(
-        "Schedule", back_populates="user", uselist=False
-    )
+    schedule = relationship("Schedule", back_populates="user", uselist=False)
 
 
 class ProfessionalRecord(Base):
@@ -40,14 +38,15 @@ class ProfessionalRecord(Base):
 
     user = relationship("User", back_populates="professional_record")
 
-class Schedule(Base):
 
-    __tablename__='schedule'
+class Schedule(Base):
+    __tablename__ = "schedule"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     date_scheduled = Column(Date, nullable=False)
     time_scheduled = Column(String, nullable=False)
-    Room = Column(String, nullable=False)
+    room = Column(String, nullable=False)
+    type_scheduled = Column(String, nullable=False)
 
     user = relationship("User", back_populates="schedule")
