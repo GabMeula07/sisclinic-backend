@@ -10,19 +10,15 @@ from sqlalchemy.orm import Session
 from app.controllers import (
     create_professional_profile_controller,
     create_user_controller,
+    creating_schedule_controller,
     get_professional_profile_controller,
     login_user_controller,
-    password_reset_controller,
-    password_reset_request_controller,
-    creating_schedule_controller
 )
 from app.database import get_session
 from app.schemas import (
-    PasswordResetConfirm,
-    PasswordResetRequest,
     ProfileSchema,
-    SchedulerRequestSchema,
     SchedulerListSchema,
+    SchedulerRequestSchema,
     TokenSchema,
     UserPublic,
     UserSchema,
@@ -82,7 +78,7 @@ def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
 
-@app.post("/password-reset-request")
+""" @app.post("/password-reset-request")
 def password_reset_request(
     request: PasswordResetRequest, db_session: Session = Depends(get_session)
 ):
@@ -96,6 +92,7 @@ def password_reset(
     request: PasswordResetConfirm, db_session: Session = Depends(get_session)
 ):
     password_reset_controller(request=request, session=db_session)
+"""
 
 
 @app.post("/rooms", response_model=SchedulerListSchema)
@@ -103,6 +100,8 @@ def rooms_scheduler(
     json: SchedulerRequestSchema,
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
-): 
-    response = creating_schedule_controller(data=json, session=session, current_user=current_user)
+):
+    response = creating_schedule_controller(
+        data=json, session=session, current_user=current_user
+    )
     return response

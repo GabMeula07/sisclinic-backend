@@ -223,3 +223,135 @@ def test_get_profile(client):
 
     assert response.status_code == HTTPStatus.OK
     assert response.json() == profile
+
+
+def test_scheduler_rooms(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    profile = {
+        "birth": "2002-12-29",
+        "cpf": "string",
+        "occupation": "string",
+        "specialization": "string",
+        "number_record": "string",
+        "street": "string",
+        "number": 0,
+        "not_number": True,
+        "neighborhood": "string",
+        "city": "string",
+        "cep": "string",
+    }
+    response = client.post("/users/profile", headers=headers, json=profile)
+    room = {
+        "room": "string",
+        "date_scheduled": "2025-08-15",
+        "time_scheduled": "string",
+        "type_scheduled": "string",
+    }
+    response = client.post("/rooms", json=room, headers=headers)
+    assert response.status_code == HTTPStatus.OK
+    assert "scheduled" in response.json()
+    assert response.json()["msg"] == "OK"
+    assert response.json()["scheduled"][0] == room
+
+
+def test_get_profile_err_not_found(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    response = client.get("/users/profile", headers=headers)
+
+    assert response.status_code == HTTPStatus.NOT_FOUND
+    assert response.json()["detail"] == "Profile User not Found"
+
+
+def test_scheduler_room_err_user_not_active(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    room = {
+        "room": "string",
+        "date_scheduled": "2025-08-15",
+        "time_scheduled": "string",
+        "type_scheduled": "string",
+    }
+    response = client.post("/rooms", json=room, headers=headers)
+
+    assert response.status_code == HTTPStatus.UNAUTHORIZED
+    assert response.json()["detail"] == "User is not active"
+
+
+def test_scheduler_already_exists(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    profile = {
+        "birth": "2002-12-29",
+        "cpf": "string",
+        "occupation": "string",
+        "specialization": "string",
+        "number_record": "string",
+        "street": "string",
+        "number": 0,
+        "not_number": True,
+        "neighborhood": "string",
+        "city": "string",
+        "cep": "string",
+    }
+    response = client.post("/users/profile", headers=headers, json=profile)
+    room = {
+        "room": "string",
+        "date_scheduled": "2025-08-15",
+        "time_scheduled": "string",
+        "type_scheduled": "string",
+    }
+    response = client.post("/rooms", json=room, headers=headers)
+    response = client.post("/rooms", json=room, headers=headers)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json()["detail"] == "Schedule already exists"

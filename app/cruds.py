@@ -111,7 +111,7 @@ def create_schedule(data: dict, session: Session, current_user):
         room=data.room,
         date_scheduled=data.date_scheduled,
         time_scheduled=data.time_scheduled,
-        type_scheduled=data.type_scheduled
+        type_scheduled=data.type_scheduled,
     )
 
     session.add(db_schedule)

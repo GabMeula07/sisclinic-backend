@@ -42,7 +42,7 @@ def create_access_token(
     return encoded_jwt
 
 
-def create_reset_token(
+""" def create_reset_token(
     data: dict, expires_delta: timedelta = timedelta(minutes=15)
 ):
     to_encode = data.copy()
@@ -57,7 +57,8 @@ def verify_reset_token(token: str):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         return payload.get("sub")
     except jwt.JWTError:
-        return None
+        return None 
+"""
 
 
 def verify_token(token: str):

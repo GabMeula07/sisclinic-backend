@@ -4,29 +4,23 @@ sys.path.append("/home/gabrielmeula/projects/sisclinic_simplified")
 
 from http import HTTPStatus
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 from app.cruds import (
     create_professional,
+    create_schedule,
     create_user,
     get_professional,
     get_user_by_email,
-    update_user,
-    create_schedule
 )
 from app.schemas import (
-    PasswordResetConfirm,
-    PasswordResetRequest,
     ProfileSchema,
 )
 from app.security import (
     create_access_token,
-    create_reset_token,
     verify_password,
-    verify_reset_token,
 )
-from app.services import send_reset_email
 
 # User Controllers
 
@@ -80,7 +74,7 @@ def create_professional_profile_controller(
 # Password Reset Controllers
 
 
-def password_reset_request_controller(
+""" def password_reset_request_controller(
     request: PasswordResetRequest, session: Session
 ):
     user = get_user_by_email(session=session, email=request.email)
@@ -111,13 +105,17 @@ def password_reset_controller(request: PasswordResetConfirm, session: Session):
     )
 
     return {"message": "Password successfully updated"}
+ """
 
+# Scheduler Controller
 
-def creating_schedule_controller(
-    data: dict, session: Session, current_user
-): 
-    scheduled = create_schedule(data=data, session=session, current_user=current_user)
-    return{
-        "scheduled": [scheduled],
-        "msg": "OK"
-    }
+def creating_schedule_controller(data: dict, session: Session, current_user):
+    if not current_user.active:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED, detail="User is not active"
+        )
+
+    scheduled = create_schedule(
+        data=data, session=session, current_user=current_user
+    )
+    return {"scheduled": [scheduled], "msg": "OK"}

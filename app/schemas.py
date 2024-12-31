@@ -1,5 +1,6 @@
 from datetime import date, datetime
 from typing import List
+
 from pydantic import BaseModel, EmailStr, PastDate, field_validator
 
 
@@ -54,7 +55,7 @@ class SchedulerRequestSchema(BaseModel):
     time_scheduled: str
     type_scheduled: str
 
-    @field_validator("date_scheduled", mode='before')
+    @field_validator("date_scheduled", mode="before")
     def validate_date(cls, value):
         if isinstance(value, str):
             value = datetime.strptime(value, "%Y-%m-%d").date()
