@@ -80,6 +80,6 @@ class ScheduledSchema(BaseModel):
 
 
 class ScheduledAdminListSchema(BaseModel):
-    scheduled: list[ScheduledSchema]
     prox_index: int
     max_index: int
+    scheduled: list[ScheduledSchema]

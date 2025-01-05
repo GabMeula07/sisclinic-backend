@@ -24,6 +24,7 @@ from app.schemas import (
     TokenSchema,
     UserPublic,
     UserSchema,
+    ScheduledAdminListSchema
 )
 from app.security import (
     get_current_user,
@@ -111,7 +112,7 @@ def rooms_scheduler(
     return response
 
 
-@app.get("/rooms")
+@app.get("/rooms", response_model=ScheduledAdminListSchema)
 def get_scheduled_rooms(
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
@@ -126,7 +127,7 @@ def get_scheduled_rooms(
     )
 
 
-@app.get("/myrooms")
+@app.get("/myrooms", response_model=ScheduledAdminListSchema)
 def get_my_scheduled_rooms(
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
