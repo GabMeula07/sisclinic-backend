@@ -49,5 +49,6 @@ class Schedule(Base):
     time_scheduled = Column(String, nullable=False)
     room = Column(String, nullable=False)
     type_scheduled = Column(String, nullable=False)
+    active = Column(Boolean, default=True, nullable=False)
 
     user = relationship("User", back_populates="schedule")
