@@ -24,6 +24,8 @@ from app.schemas import (
     UserPublic,
     UserSchema,
 )
+
+
 from app.security import (
     get_current_user,
 )
@@ -32,6 +34,8 @@ app = FastAPI()
 
 
 # register endpoint
+
+
 @app.post("/user/", response_model=UserPublic, status_code=HTTPStatus.CREATED)
 def register_user(
     user: UserSchema, db_session: Session = Depends(get_session)
