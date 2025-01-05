@@ -19,12 +19,12 @@ from app.controllers import (
 from app.database import get_session
 from app.schemas import (
     ProfileSchema,
+    ScheduledAdminListSchema,
     SchedulerListSchema,
     SchedulerRequestSchema,
     TokenSchema,
     UserPublic,
     UserSchema,
-    ScheduledAdminListSchema
 )
 from app.security import (
     get_current_user,

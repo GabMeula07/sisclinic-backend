@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import and_, func, select, extract
+from sqlalchemy.sql import and_, extract, func, select
 
 from app.models import ProfessionalRecord, Schedule, User
 from app.security import get_password_hash
@@ -89,26 +89,25 @@ def get_professional(session: Session, user):
         )
     return db_profile
 
+
 def check_fixed_scheduled(
-        session: Session, 
-        date_scheduled, 
-        time_scheduled, 
-        room
-    ):
+    session: Session, date_scheduled, time_scheduled, room
+):
     db_schedule = session.scalar(
         select(Schedule).where(
             and_(
                 Schedule.room == room,
                 Schedule.time_scheduled == time_scheduled,
-                extract('dow',Schedule.date_scheduled) == extract('dow',date_scheduled),
-                Schedule.active == True
+                extract("dow", Schedule.date_scheduled)
+                == extract("dow", date_scheduled),
+                Schedule.active == True,
             )
         )
-    )  
+    )
     if db_schedule:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
-            detail='this scheduler is fixed'
+            detail="this scheduler is fixed",
         )
 
 
@@ -128,14 +127,13 @@ def create_schedule(data: dict, session: Session, current_user):
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Schedule already exists",
         )
-    
+
     check_fixed_scheduled(
         session=session,
         date_scheduled=data.date_scheduled,
         time_scheduled=data.time_scheduled,
-        room=data.room
+        room=data.room,
     )
-
 
     db_schedule = Schedule(
         user_id=current_user.id,

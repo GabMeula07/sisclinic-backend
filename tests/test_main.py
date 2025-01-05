@@ -402,10 +402,59 @@ def test_get_scheduler_rooms(client):
     assert "scheduled" in response.json()
     assert response.json()["max_index"] == 1
     assert response.json()["scheduled"][0] == {
+        "id": 1,
         "user_id": 1,
         "room": "string",
-        "id": 1,
         "date_scheduled": "2025-08-15",
         "time_scheduled": "string",
         "type_scheduled": "string",
     }
+
+
+def test_fixed_scheduler_already_exists(client):
+    client.post(
+        "/user/",
+        json={
+            "first_name": "bagriel",
+            "last_name": "meula",
+            "email": "teste@gmail.com",
+            "password": "31324664",
+        },
+    )
+    form_data = {"username": "teste@gmail.com", "password": "31324664"}
+    token_response = client.post("/token", data=form_data)
+    data = token_response.json()
+
+    headers = {"Authorization": f"Bearer {data['access_token']}"}
+    profile = {
+        "birth": "2002-12-29",
+        "cpf": "string",
+        "occupation": "string",
+        "specialization": "string",
+        "number_record": "string",
+        "street": "string",
+        "number": 0,
+        "not_number": True,
+        "neighborhood": "string",
+        "city": "string",
+        "cep": "string",
+    }
+    response = client.post("/users/profile", headers=headers, json=profile)
+    room = {
+        "room": "string",
+        "date_scheduled": "2025-01-06",
+        "time_scheduled": "string",
+        "type_scheduled": "fixo",
+    }
+    response = client.post("/rooms", json=room, headers=headers)
+
+    room = {
+        "room": "string",
+        "date_scheduled": "2025-01-13",
+        "time_scheduled": "string",
+        "type_scheduled": "extra",
+    }
+    response = client.post("/rooms", json=room, headers=headers)
+
+    assert response.status_code == HTTPStatus.BAD_REQUEST
+    assert response.json()["detail"] == "this scheduler is fixed"
