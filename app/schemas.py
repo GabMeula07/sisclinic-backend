@@ -66,6 +66,20 @@ class SchedulerRequestSchema(BaseModel):
 
 
 class SchedulerListSchema(BaseModel):
-    # Lista de agendamentos
     scheduled: List[SchedulerRequestSchema]
-    msg: str  # Mensagem adicional
+    msg: str
+
+
+class ScheduledSchema(BaseModel):
+    id: int
+    user_id: int
+    room: str
+    date_scheduled: date
+    time_scheduled: str
+    type_scheduled: str
+
+
+class ScheduledAdminListSchema(BaseModel):
+    scheduled: list[ScheduledSchema]
+    prox_index: int
+    max_index: int

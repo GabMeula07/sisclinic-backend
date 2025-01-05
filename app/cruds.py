@@ -1,8 +1,9 @@
+from datetime import datetime
 from http import HTTPStatus
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import and_, select
+from sqlalchemy.sql import and_, func, select
 
 from app.models import ProfessionalRecord, Schedule, User
 from app.security import get_password_hash
@@ -69,7 +70,7 @@ def create_professional(session: Session, user, data: dict):
         city=data.city,
         cep=data.cep,
     )
-    update_user(session, user, {"active": True})
+    update_user(session, user, {"is_active": True})
 
     session.add(db_profile)
     session.commit()
@@ -119,3 +120,23 @@ def create_schedule(data: dict, session: Session, current_user):
     session.refresh(db_schedule)
 
     return db_schedule
+
+
+def get_schedule(session: Session, index=None, limit=None):
+    result = session.scalars(
+        select(Schedule)
+        .where(Schedule.date_scheduled >= datetime.now())
+        .offset(index)
+        .limit(limit)
+    )
+    return list(result)
+
+
+def get_max_index(session: Session):
+    today = datetime.today()
+    max_index = (
+        session.query(func.count(Schedule.id))
+        .filter(Schedule.date_scheduled >= today)
+        .scalar()
+    )
+    return max_index

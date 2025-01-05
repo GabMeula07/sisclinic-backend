@@ -4,13 +4,14 @@ sys.path.append("/home/gabrielmeula/projects/sisclinic_simplified")
 
 from http import HTTPStatus
 
-from fastapi import Depends, FastAPI, Form
+from fastapi import Depends, FastAPI, Form, Query
 from sqlalchemy.orm import Session
 
 from app.controllers import (
     create_professional_profile_controller,
     create_user_controller,
     creating_schedule_controller,
+    get_all_scheduled_controller,
     get_professional_profile_controller,
     login_user_controller,
 )
@@ -105,3 +106,18 @@ def rooms_scheduler(
         data=json, session=session, current_user=current_user
     )
     return response
+
+
+@app.get("/rooms")
+def get_scheduled_rooms(
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+    index: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+):
+    return get_all_scheduled_controller(
+        session=session,
+        current_user=current_user,
+        index=index,
+        limit=limit,
+    )

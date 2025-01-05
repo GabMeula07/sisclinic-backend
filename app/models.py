@@ -12,7 +12,8 @@ class User(Base):
     last_name = Column(String, nullable=False)
     email = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)
-    active = Column(Boolean, default=False)
+    is_active = Column(Boolean, default=False)
+    is_adm = Column(Boolean, default=False)
     professional_record = relationship(
         "ProfessionalRecord", back_populates="user", uselist=False
     )

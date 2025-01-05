@@ -11,7 +11,9 @@ from app.cruds import (
     create_professional,
     create_schedule,
     create_user,
+    get_max_index,
     get_professional,
+    get_schedule,
     get_user_by_email,
 )
 from app.schemas import (
@@ -107,10 +109,11 @@ def password_reset_controller(request: PasswordResetConfirm, session: Session):
     return {"message": "Password successfully updated"}
  """
 
-# Scheduler Controller
+# Scheduler Controllers
+
 
 def creating_schedule_controller(data: dict, session: Session, current_user):
-    if not current_user.active:
+    if not current_user.is_active:
         raise HTTPException(
             status_code=HTTPStatus.UNAUTHORIZED, detail="User is not active"
         )
@@ -119,3 +122,22 @@ def creating_schedule_controller(data: dict, session: Session, current_user):
         data=data, session=session, current_user=current_user
     )
     return {"scheduled": [scheduled], "msg": "OK"}
+
+
+def get_all_scheduled_controller(
+    session: Session, current_user, index=0, limit=10
+):
+    if not current_user.is_adm:
+        raise HTTPException(
+            status_code=HTTPStatus.UNAUTHORIZED, detail="User is not adm"
+        )
+
+    scheduled = get_schedule(session=session, index=index, limit=limit)
+    data = {
+        "prox_index": (index + limit + 1)
+        if (index + limit) < get_max_index(session=session)
+        else None,
+        "max_index": int(get_max_index(session=session)),
+        "scheduled": scheduled,
+    }
+    return data
