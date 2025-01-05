@@ -13,6 +13,7 @@ from app.controllers import (
     creating_schedule_controller,
     get_all_scheduled_controller,
     get_professional_profile_controller,
+    get_user_scheduled_controller,
     login_user_controller,
 )
 from app.database import get_session
@@ -24,8 +25,6 @@ from app.schemas import (
     UserPublic,
     UserSchema,
 )
-
-
 from app.security import (
     get_current_user,
 )
@@ -120,6 +119,21 @@ def get_scheduled_rooms(
     limit: int = Query(10, le=100),
 ):
     return get_all_scheduled_controller(
+        session=session,
+        current_user=current_user,
+        index=index,
+        limit=limit,
+    )
+
+
+@app.get("/myrooms")
+def get_my_scheduled_rooms(
+    session: Session = Depends(get_session),
+    current_user=Depends(get_current_user),
+    index: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+):
+    return get_user_scheduled_controller(
         session=session,
         current_user=current_user,
         index=index,

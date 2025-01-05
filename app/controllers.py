@@ -12,8 +12,10 @@ from app.cruds import (
     create_schedule,
     create_user,
     get_max_index,
+    get_max_index_by_user_id,
     get_professional,
     get_schedule,
+    get_scheduler_by_user_id,
     get_user_by_email,
 )
 from app.schemas import (
@@ -140,4 +142,26 @@ def get_all_scheduled_controller(
         "max_index": int(get_max_index(session=session)),
         "scheduled": scheduled,
     }
+    return data
+
+
+def get_user_scheduled_controller(
+    session: Session, current_user, index=0, limit=10
+):
+    scheduled = get_scheduler_by_user_id(
+        session=session, user_id=int(current_user.id), index=index, limit=limit
+    )
+
+    data = {
+        "prox_index": (index + limit + 1)
+        if (index + limit) < get_max_index(session=session)
+        else None,
+        "max_index": int(
+            get_max_index_by_user_id(
+                session=session, user_id=int(current_user.id)
+            )
+        ),
+        "scheduled": scheduled,
+    }
+
     return data

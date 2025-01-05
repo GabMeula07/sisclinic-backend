@@ -1,5 +1,5 @@
 from http import HTTPStatus
-from app.cruds import update_user
+
 
 def test_create_user(client):
     response = client.post(
@@ -394,14 +394,14 @@ def test_get_scheduler_rooms(client):
         "type_scheduled": "string",
     }
     response = client.post("/rooms", json=room, headers=headers)
-    response = client.get("/rooms", headers=headers)
-    
+    response = client.get("/myrooms", headers=headers)
+
     assert response.status_code == HTTPStatus.OK
     assert "prox_index" in response.json()
     assert "max_index" in response.json()
     assert "scheduled" in response.json()
     assert response.json()["max_index"] == 1
-    assert response.json["scheduler"][0] == {
+    assert response.json()["scheduled"][0] == {
         "user_id": 1,
         "room": "string",
         "id": 1,

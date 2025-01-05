@@ -132,11 +132,38 @@ def get_schedule(session: Session, index=None, limit=None):
     return list(result)
 
 
+def get_scheduler_by_user_id(
+    session: Session, user_id: int, index=None, limit=None
+):
+    result = session.scalars(
+        select(Schedule)
+        .where(
+            and_(
+                Schedule.date_scheduled >= datetime.now(),
+                Schedule.user_id == user_id,
+            )
+        )
+        .offset(index)
+        .limit(limit)
+    )
+    return list(result)
+
+
 def get_max_index(session: Session):
     today = datetime.today()
     max_index = (
         session.query(func.count(Schedule.id))
         .filter(Schedule.date_scheduled >= today)
+        .scalar()
+    )
+    return max_index
+
+
+def get_max_index_by_user_id(session: Session, user_id: int):
+    today = datetime.today()
+    max_index = (
+        session.query(func.count(Schedule.id))
+        .filter(Schedule.date_scheduled >= today, Schedule.user_id == user_id)
         .scalar()
     )
     return max_index
