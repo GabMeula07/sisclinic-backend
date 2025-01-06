@@ -11,6 +11,7 @@ from app.controllers import (
     create_professional_profile_controller,
     create_user_controller,
     creating_schedule_controller,
+    delete_user_scheduler_controller,
     get_all_scheduled_controller,
     get_professional_profile_controller,
     get_user_scheduled_controller,
@@ -140,3 +141,18 @@ def get_my_scheduled_rooms(
         index=index,
         limit=limit,
     )
+
+
+@app.delete("/myrooms", response_model=SchedulerListSchema)
+async def delete_scheduler(
+    session: Session = Depends(get_session),
+    current_user = Depends(get_current_user),
+    item_id: int = Query(..., gt=0),
+):
+    data = delete_user_scheduler_controller(
+        session=session,
+        current_user_id=int(current_user.id),
+        scheduler_id=int(item_id),
+    )
+
+    return {"scheduled":[data], "msg": "deleted"}

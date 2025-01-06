@@ -17,6 +17,8 @@ from app.cruds import (
     get_schedule,
     get_scheduler_by_user_id,
     get_user_by_email,
+    get_scheduler_by_id,
+    delete_user_scheduler,
 )
 from app.schemas import (
     ProfileSchema,
@@ -164,4 +166,16 @@ def get_user_scheduled_controller(
         "scheduled": scheduled,
     }
 
+    return data
+
+
+def delete_user_scheduler_controller(
+    session: Session, scheduler_id: int, current_user_id: int
+):  
+    scheduler = get_scheduler_by_id(session=session, scheduler_id=scheduler_id)
+    data = delete_user_scheduler(
+        session=session, 
+        current_user_id=current_user_id,
+        schedule=scheduler
+    )
     return data

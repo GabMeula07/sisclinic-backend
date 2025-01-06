@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import and_, extract, func, select
 
-from app.models import ProfessionalRecord, Schedule, User
+from app.models import ProfessionalRecord, Schedule, ScheduleDeactivation, User
 from app.security import get_password_hash
 
 
@@ -169,6 +169,7 @@ def get_scheduler_by_user_id(
             and_(
                 Schedule.date_scheduled >= datetime.now(),
                 Schedule.user_id == user_id,
+                Schedule.active == True,
             )
         )
         .offset(index)
@@ -195,3 +196,43 @@ def get_max_index_by_user_id(session: Session, user_id: int):
         .scalar()
     )
     return max_index
+
+
+def delete_user_scheduler(
+    session: Session, schedule: Schedule, current_user_id
+):
+    
+    if schedule.type_scheduled == 'fixo':
+        create_scheduler_deactivate(
+            session=session, schedule=schedule, current_user_id=current_user_id
+        )
+
+    setattr(schedule, "active", False)
+    session.commit()
+    session.refresh(schedule)
+    return schedule
+
+
+def create_scheduler_deactivate(
+    session: Session, schedule: Schedule, current_user_id
+):
+    schedule_deactivate = ScheduleDeactivation(
+        user_id=current_user_id, schedule_id=schedule.id
+    )
+    session.add(schedule_deactivate)
+    session.commit()
+    session.refresh(schedule_deactivate)
+
+    return schedule_deactivate
+
+
+def get_scheduler_by_id(session: Session, scheduler_id: int):
+    scheduler = session.scalar(
+        select(Schedule).where(Schedule.id == scheduler_id)
+    )
+    if not scheduler_id:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST, detail="Scheduler not found"
+        )
+    
+    return scheduler

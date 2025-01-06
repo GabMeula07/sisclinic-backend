@@ -1,4 +1,14 @@
-from sqlalchemy import Boolean, Column, Date, ForeignKey, Integer, String
+from datetime import datetime, timezone
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Date,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+)
 from sqlalchemy.orm import declarative_base, relationship
 
 Base = declarative_base()
@@ -52,3 +62,18 @@ class Schedule(Base):
     active = Column(Boolean, default=True, nullable=False)
 
     user = relationship("User", back_populates="schedule")
+
+
+class ScheduleDeactivation(Base):
+    __tablename__ = "schedule_deactivation"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    schedule_id = Column(Integer, ForeignKey("schedule.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    deactivation_date = Column(
+        DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
+    )
+
+    # Relacionamentos
+    schedule = relationship("Schedule")
+    user = relationship("User")
