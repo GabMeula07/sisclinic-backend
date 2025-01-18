@@ -4,7 +4,8 @@ from fastapi import Depends, FastAPI, Form, Query
 from sqlalchemy.orm import Session
 
 from app.admin.routes import admin_routes
-from app.controllers import (
+from app.config.database import get_session
+from app.users.controllers import (
     create_professional_profile_controller,
     create_user_controller,
     creating_schedule_controller,
@@ -14,8 +15,7 @@ from app.controllers import (
     get_user_scheduled_controller,
     login_user_controller,
 )
-from app.database import get_session
-from app.schemas import (
+from app.users.schemas import (
     ProfileSchema,
     ScheduledAdminListSchema,
     SchedulerListSchema,
@@ -24,7 +24,7 @@ from app.schemas import (
     UserPublic,
     UserSchema,
 )
-from app.security import (
+from app.users.security import (
     get_current_user,
 )
 

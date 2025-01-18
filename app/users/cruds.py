@@ -5,8 +5,13 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import and_, extract, func, select
 
-from app.models import ProfessionalRecord, Schedule, ScheduleDeactivation, User
-from app.security import get_password_hash
+from app.config.models import (
+    ProfessionalRecord,
+    Schedule,
+    ScheduleDeactivation,
+    User,
+)
+from app.users.security import get_password_hash
 
 
 def create_user(session: Session, user: dict):
