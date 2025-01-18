@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("/home/gabrielmeula/projects/sisclinic_simplified")
-
 from http import HTTPStatus
 
 from fastapi import Depends, FastAPI, Form, Query
@@ -146,7 +142,7 @@ def get_my_scheduled_rooms(
 @app.delete("/myrooms", response_model=SchedulerListSchema)
 async def delete_scheduler(
     session: Session = Depends(get_session),
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
     item_id: int = Query(..., gt=0),
 ):
     data = delete_user_scheduler_controller(
@@ -155,4 +151,4 @@ async def delete_scheduler(
         scheduler_id=int(item_id),
     )
 
-    return {"scheduled":[data], "msg": "deleted"}
+    return {"scheduled": [data], "msg": "deleted"}

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import (
     Boolean,
@@ -67,12 +67,15 @@ class Schedule(Base):
 class ScheduleDeactivation(Base):
     __tablename__ = "schedule_deactivation"
 
+    time_limit = datetime.now(timezone.utc) + timedelta(days=15)
+
     id = Column(Integer, primary_key=True, autoincrement=True)
     schedule_id = Column(Integer, ForeignKey("schedule.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     deactivation_date = Column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
+    date_limit = Column(DateTime, default=time_limit, nullable=False)
 
     # Relacionamentos
     schedule = relationship("Schedule")

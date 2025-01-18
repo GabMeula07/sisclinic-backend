@@ -1,7 +1,3 @@
-import sys
-
-sys.path.append("/home/gabrielmeula/projects/sisclinic_simplified")
-
 from http import HTTPStatus
 
 from fastapi import HTTPException
@@ -11,14 +7,14 @@ from app.cruds import (
     create_professional,
     create_schedule,
     create_user,
+    delete_user_scheduler,
     get_max_index,
     get_max_index_by_user_id,
     get_professional,
     get_schedule,
+    get_scheduler_by_id,
     get_scheduler_by_user_id,
     get_user_by_email,
-    get_scheduler_by_id,
-    delete_user_scheduler,
 )
 from app.schemas import (
     ProfileSchema,
@@ -171,11 +167,9 @@ def get_user_scheduled_controller(
 
 def delete_user_scheduler_controller(
     session: Session, scheduler_id: int, current_user_id: int
-):  
+):
     scheduler = get_scheduler_by_id(session=session, scheduler_id=scheduler_id)
     data = delete_user_scheduler(
-        session=session, 
-        current_user_id=current_user_id,
-        schedule=scheduler
+        session=session, current_user_id=current_user_id, schedule=scheduler
     )
     return data

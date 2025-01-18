@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from http import HTTPStatus
 
 from fastapi import HTTPException
@@ -111,6 +111,29 @@ def check_fixed_scheduled(
         )
 
 
+def check_scheduler_deactivate(session: Session, scheduler, current_user):
+    query = (
+        select(ScheduleDeactivation)
+        .join(Schedule, ScheduleDeactivation.schedule_id == Schedule.id)
+        .filter(
+            ScheduleDeactivation.user_id == int(current_user.id),
+            ScheduleDeactivation.date_limit >= datetime.now(timezone.utc),
+            Schedule.room == scheduler.room,
+            Schedule.time_scheduled == scheduler.time_scheduled,
+            extract("dow", Schedule.date_scheduled)
+            == extract("dow", scheduler.date_scheduled),
+        )
+    )
+
+    result = session.execute(query).scalars().first()
+
+    if result:
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="You Cant Scheduled this room",
+        )
+
+
 def create_schedule(data: dict, session: Session, current_user):
     db_schedule = session.scalar(
         select(Schedule).where(
@@ -118,6 +141,7 @@ def create_schedule(data: dict, session: Session, current_user):
                 Schedule.room == data.room,
                 Schedule.time_scheduled == data.time_scheduled,
                 Schedule.date_scheduled == data.date_scheduled,
+                Schedule.active == True,
             )
         )
     )
@@ -127,6 +151,10 @@ def create_schedule(data: dict, session: Session, current_user):
             status_code=HTTPStatus.BAD_REQUEST,
             detail="Schedule already exists",
         )
+
+    check_scheduler_deactivate(
+        session=session, scheduler=data, current_user=current_user
+    )
 
     check_fixed_scheduled(
         session=session,
@@ -153,7 +181,7 @@ def create_schedule(data: dict, session: Session, current_user):
 def get_schedule(session: Session, index=None, limit=None):
     result = session.scalars(
         select(Schedule)
-        .where(Schedule.date_scheduled >= datetime.now())
+        .where(Schedule.date_scheduled >= datetime.now(timezone.utc))
         .offset(index)
         .limit(limit)
     )
@@ -167,7 +195,7 @@ def get_scheduler_by_user_id(
         select(Schedule)
         .where(
             and_(
-                Schedule.date_scheduled >= datetime.now(),
+                Schedule.date_scheduled >= datetime.now(timezone.utc).date(),
                 Schedule.user_id == user_id,
                 Schedule.active == True,
             )
@@ -201,8 +229,7 @@ def get_max_index_by_user_id(session: Session, user_id: int):
 def delete_user_scheduler(
     session: Session, schedule: Schedule, current_user_id
 ):
-    
-    if schedule.type_scheduled == 'fixo':
+    if schedule.type_scheduled == "fixo":
         create_scheduler_deactivate(
             session=session, schedule=schedule, current_user_id=current_user_id
         )
@@ -234,5 +261,5 @@ def get_scheduler_by_id(session: Session, scheduler_id: int):
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST, detail="Scheduler not found"
         )
-    
+
     return scheduler
