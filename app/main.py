@@ -3,6 +3,7 @@ from http import HTTPStatus
 from fastapi import Depends, FastAPI, Form, Query
 from sqlalchemy.orm import Session
 
+from app.admin.routes import admin_routes
 from app.controllers import (
     create_professional_profile_controller,
     create_user_controller,
@@ -28,19 +29,24 @@ from app.security import (
 )
 
 app = FastAPI()
-
+app.include_router(admin_routes, tags=["Admin"])
 
 # register endpoint
 
 
-@app.post("/user/", response_model=UserPublic, status_code=HTTPStatus.CREATED)
+@app.post(
+    "/user/",
+    tags=["User"],
+    response_model=UserPublic,
+    status_code=HTTPStatus.CREATED,
+)
 def register_user(
     user: UserSchema, db_session: Session = Depends(get_session)
 ):
     return create_user_controller(session=db_session, user=user)
 
 
-@app.post("/token", response_model=TokenSchema)
+@app.post("/token", tags=["User"], response_model=TokenSchema)
 async def login_user(
     username: str = Form(...),
     password: str = Form(...),
@@ -52,7 +58,7 @@ async def login_user(
     return result
 
 
-@app.get("/users/profile", response_model=ProfileSchema)
+@app.get("/users/profile", tags=["User"], response_model=ProfileSchema)
 def get_professional_profile(
     db_session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
@@ -63,7 +69,7 @@ def get_professional_profile(
     return profile
 
 
-@app.post("/users/profile", response_model=ProfileSchema)
+@app.post("/users/profile", tags=["User"], response_model=ProfileSchema)
 def create_professional_profile(
     data: ProfileSchema,
     db_session: Session = Depends(get_session),
@@ -75,7 +81,7 @@ def create_professional_profile(
     return profile
 
 
-@app.get("/users/me", response_model=UserPublic)
+@app.get("/users/me", tags=["User"], response_model=UserPublic)
 def read_users_me(current_user: dict = Depends(get_current_user)):
     return current_user
 
@@ -97,7 +103,7 @@ def password_reset(
 """
 
 
-@app.post("/rooms", response_model=SchedulerListSchema)
+@app.post("/rooms", tags=["Scheduler"], response_model=SchedulerListSchema)
 def rooms_scheduler(
     json: SchedulerRequestSchema,
     session: Session = Depends(get_session),
@@ -109,7 +115,7 @@ def rooms_scheduler(
     return response
 
 
-@app.get("/rooms", response_model=ScheduledAdminListSchema)
+@app.get("/rooms", tags=["Scheduler"], response_model=ScheduledAdminListSchema)
 def get_scheduled_rooms(
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
@@ -124,7 +130,9 @@ def get_scheduled_rooms(
     )
 
 
-@app.get("/myrooms", response_model=ScheduledAdminListSchema)
+@app.get(
+    "/myrooms", tags=["Scheduler"], response_model=ScheduledAdminListSchema
+)
 def get_my_scheduled_rooms(
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
@@ -139,7 +147,7 @@ def get_my_scheduled_rooms(
     )
 
 
-@app.delete("/myrooms", response_model=SchedulerListSchema)
+@app.delete("/myrooms", tags=["Scheduler"], response_model=SchedulerListSchema)
 async def delete_scheduler(
     session: Session = Depends(get_session),
     current_user=Depends(get_current_user),
