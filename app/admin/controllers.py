@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.admin.cruds import get_all_user, get_all_user_data
+from app.admin.cruds import get_all_user, get_all_user_data, get_scheduler_user
 from app.admin.services import check_admin
 
 
@@ -14,3 +14,13 @@ def get_user_profile(session: Session, current_user, user_id):
     check_admin(current_user)
     user_profile = get_all_user_data(session=session, user_id=user_id)
     return user_profile
+
+
+def get_sheduler_user_data(
+    session: Session, current_user, user_id: int, offset: int, limit: int
+):
+    check_admin(current_user)
+    scheduler_list = get_scheduler_user(
+        session=session, user_id=user_id, offset=offset, limit=limit
+    )
+    return scheduler_list

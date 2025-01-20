@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from app.admin.controllers import (
     get_all_users_admin_controller,
+    get_sheduler_user_data,
     get_user_profile,
 )
 from app.admin.schemas import AllUserAdmin, UserProfileAdmin
@@ -40,3 +41,23 @@ def get_profile_user(
         session=session, current_user=current_user, user_id=user_id
     )
     return profile
+
+
+@admin_routes.get("/users/{user_id}/shedulers/")
+def get_user_sheduler(
+    user_id: int,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+):
+    list_scheduled = get_sheduler_user_data(
+        session=session,
+        current_user=current_user,
+        user_id=user_id,
+        offset=offset,
+        limit=limit,
+    )
+    return {
+        "scheduled": list_scheduled
+    }
