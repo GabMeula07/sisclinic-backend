@@ -18,6 +18,7 @@ def get_all_user_data(session: Session, user_id):
         .filter(User.id == user_id)
         .first()  # Usando .first() já que é possível que o usuário tenha apenas um perfil
     )
+
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 

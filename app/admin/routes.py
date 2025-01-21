@@ -58,6 +58,4 @@ def get_user_sheduler(
         offset=offset,
         limit=limit,
     )
-    return {
-        "scheduled": list_scheduled
-    }
+    return {"scheduled": list_scheduled}
