@@ -398,9 +398,7 @@ def test_get_scheduler_rooms(client):
 
     assert response.status_code == HTTPStatus.OK
     assert "prox_index" in response.json()
-    assert "max_index" in response.json()
     assert "scheduled" in response.json()
-    assert response.json()["max_index"] == 1
     assert response.json()["scheduled"][0] == {
         "id": 1,
         "user_id": 1,

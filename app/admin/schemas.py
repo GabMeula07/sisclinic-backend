@@ -32,3 +32,23 @@ class UserProfileAdmin(BaseModel):
     neighborhood: str
     city: str
     cep: str
+
+
+class ScheduledSchema(BaseModel):
+    id: int
+    user_id: int
+    room: str
+    date_scheduled: date
+    time_scheduled: str
+    type_scheduled: str
+
+    class Config:
+        orm_mode = True
+        from_attributes=True
+
+class SchedulerListAdmin(BaseModel):
+    prox_index: int | None = None
+    scheduled: List[ScheduledSchema]
+    
+    class Config:
+        orm_mode = True

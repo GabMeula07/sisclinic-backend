@@ -1,11 +1,16 @@
 from fastapi import APIRouter, Depends, Query
 
 from app.admin.controllers import (
+    get_all_scheduler_controller,
     get_all_users_admin_controller,
-    get_sheduler_user_data,
+    get_sheduler_user_data_controller,
     get_user_profile,
 )
-from app.admin.schemas import AllUserAdmin, UserProfileAdmin
+from app.admin.schemas import (
+    AllUserAdmin,
+    SchedulerListAdmin,
+    UserProfileAdmin,
+)
 from app.admin.services import check_admin
 from app.config.database import get_session
 from app.users.security import get_current_user
@@ -43,7 +48,9 @@ def get_profile_user(
     return profile
 
 
-@admin_routes.get("/users/{user_id}/shedulers/")
+@admin_routes.get(
+    "/users/{user_id}/shedulers/", response_model=SchedulerListAdmin
+)
 def get_user_sheduler(
     user_id: int,
     session=Depends(get_session),
@@ -51,11 +58,30 @@ def get_user_sheduler(
     offset: int = Query(0, ge=0),
     limit: int = Query(10, le=100),
 ):
-    list_scheduled = get_sheduler_user_data(
+    return get_sheduler_user_data_controller(
         session=session,
         current_user=current_user,
         user_id=user_id,
         offset=offset,
         limit=limit,
     )
-    return {"scheduled": list_scheduled}
+
+
+@admin_routes.get("/scheduler/", response_model=SchedulerListAdmin)
+def get_all_scheduler_events(
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+    offset: int = Query(0, ge=0),
+    limit: int = Query(10, le=100),
+    data_min: str = Query(None),
+    data_max: str = Query(None),
+):
+    schedulers = get_all_scheduler_controller(
+        current_user=current_user,
+        session=session,
+        offset=offset,
+        limit=limit,
+        data_min=data_min,
+        data_max=data_max,
+    )
+    return schedulers
