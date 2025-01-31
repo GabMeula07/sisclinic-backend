@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "sisclinic"
+name = "app"
 version = "0.1.0"
 description = ""
 authors = ["GabMeula07 <gabrielqueirozmeula@gmail.com>"]
@@ -44,3 +44,4 @@ extend-exclude = ['migrations']
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+include = ["app"]

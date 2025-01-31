@@ -1,15 +1,18 @@
-FROM python:3.10-slim AS runtime
+# Use uma imagem leve do Python
+FROM python:3.11-slim
+
+# Define o diretório de trabalho dentro do container
 WORKDIR /app
 
-# Instala dependências do sistema (se necessário)
-RUN apt-get update && apt-get install -y --no-install-recommends gcc libpq-dev && rm -rf /var/lib/apt/lists/*
+# Copia o arquivo .whl para o container
+COPY dist/app-0.1.0-py3-none-any.whl /app/
 
-# Copia o pacote já existente no dist
-COPY dist/*.tar.gz .
-RUN pip install --no-cache-dir *.tar.gz
+# Instala as dependências do sistema (caso precise)
+RUN apt-get update && apt-get install -y \
+    gcc libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copia o restante do código
-COPY . .
+# Instala o pacote usando o wheel
+RUN pip install --no-cache-dir app-0.1.0-py3-none-any.whl
 
-# Comando para rodar o FastAPI
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
