@@ -1,17 +1,32 @@
- # Estágio de build
- FROM python:3.9-slim as builder
+# Estágio de build
+FROM python:3.9-slim as builder
 
- WORKDIR /app
- RUN pip install poetry
- COPY pyproject.toml poetry.lock* ./
- RUN poetry export -f requirements.txt --output requirements.txt --without-hashes
- 
- # Estágio final
- FROM python:3.9-slim
- 
- WORKDIR /app
- COPY --from=builder /app/requirements.txt .
- RUN pip install --no-cache-dir -r requirements.txt
- COPY . .
- EXPOSE 8000
- CMD ["uvicorn", "meu_projeto.main:app", "--host", "0.0.0.0", "--port", "8000"]
+WORKDIR /app
+
+# Instala o Poetry
+RUN pip install --upgrade pip && \
+    pip install poetry
+
+# Copia os arquivos de dependências
+COPY pyproject.toml poetry.lock* ./
+
+# Instala as dependências do projeto
+RUN poetry config virtualenvs.create false && \
+    poetry install --no-root --no-dev
+
+# Copia o restante do código-fonte
+COPY . .
+
+# Estágio final
+FROM python:3.9-slim
+
+WORKDIR /app
+
+# Copia as dependências instaladas do estágio de build
+COPY --from=builder /app /app
+
+# Expõe a porta da aplicação
+EXPOSE 8000
+
+# Comando para rodar a aplicação
+CMD ["poetry", "run", "uvicorn", "meu_projeto.main:app", "--host", "0.0.0.0", "--port", "8000"]
