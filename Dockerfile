@@ -1,5 +1,5 @@
 # Estágio de build
-FROM python:3.9-slim as builder
+FROM python:3.10-slim as builder
 
 WORKDIR /app
 
