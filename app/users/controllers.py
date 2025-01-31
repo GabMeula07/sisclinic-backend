@@ -3,7 +3,7 @@ from http import HTTPStatus
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-from app.cruds import (
+from app.users.cruds import (
     create_professional,
     create_schedule,
     create_user,
@@ -16,10 +16,10 @@ from app.cruds import (
     get_scheduler_by_user_id,
     get_user_by_email,
 )
-from app.schemas import (
+from app.users.schemas import (
     ProfileSchema,
 )
-from app.security import (
+from app.users.security import (
     create_access_token,
     verify_password,
 )

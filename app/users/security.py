@@ -9,7 +9,7 @@ from jose import JWTError, jwt
 from pwdlib import PasswordHash
 from sqlalchemy.orm import Session
 
-from .database import get_session
+from app.config.database import get_session
 
 pwd_context = PasswordHash.recommended()
 

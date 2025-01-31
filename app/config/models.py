@@ -58,7 +58,7 @@ class Schedule(Base):
     date_scheduled = Column(Date, nullable=False)
     time_scheduled = Column(String, nullable=False)
     room = Column(String, nullable=False)
-    type_scheduled = Column(String, nullable=False)
+    is_fixed = Column(Boolean, nullable=False)
     active = Column(Boolean, default=True, nullable=False)
 
     user = relationship("User", back_populates="schedule")
@@ -67,15 +67,17 @@ class Schedule(Base):
 class ScheduleDeactivation(Base):
     __tablename__ = "schedule_deactivation"
 
-    time_limit = datetime.now(timezone.utc) + timedelta(days=15)
-
     id = Column(Integer, primary_key=True, autoincrement=True)
     schedule_id = Column(Integer, ForeignKey("schedule.id"), nullable=False)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     deactivation_date = Column(
         DateTime, default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    date_limit = Column(DateTime, default=time_limit, nullable=False)
+    date_limit = Column(
+        DateTime,
+        default=lambda: datetime.now(timezone.utc) + timedelta(days=15),
+        nullable=False,
+    )
 
     # Relacionamentos
     schedule = relationship("Schedule")

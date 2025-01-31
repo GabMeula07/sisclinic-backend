@@ -7,9 +7,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 from sqlalchemy.pool import StaticPool
 
-from app.database import get_session
+from app.config.database import get_session
+from app.config.models import Base
 from app.main import app
-from app.models import Base
 
 
 # Fixture para o banco de dados

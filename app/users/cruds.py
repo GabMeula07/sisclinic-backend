@@ -5,8 +5,13 @@ from fastapi import HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import and_, extract, func, select
 
-from app.models import ProfessionalRecord, Schedule, ScheduleDeactivation, User
-from app.security import get_password_hash
+from app.config.models import (
+    ProfessionalRecord,
+    Schedule,
+    ScheduleDeactivation,
+    User,
+)
+from app.users.security import get_password_hash
 
 
 def create_user(session: Session, user: dict):
@@ -168,7 +173,7 @@ def create_schedule(data: dict, session: Session, current_user):
         room=data.room,
         date_scheduled=data.date_scheduled,
         time_scheduled=data.time_scheduled,
-        type_scheduled=data.type_scheduled,
+        is_fixed=data.is_fixed,
     )
 
     session.add(db_schedule)
@@ -229,7 +234,7 @@ def get_max_index_by_user_id(session: Session, user_id: int):
 def delete_user_scheduler(
     session: Session, schedule: Schedule, current_user_id
 ):
-    if schedule.type_scheduled == "fixo":
+    if schedule.is_fixed:
         create_scheduler_deactivate(
             session=session, schedule=schedule, current_user_id=current_user_id
         )

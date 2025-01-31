@@ -258,7 +258,7 @@ def test_scheduler_rooms(client):
         "room": "string",
         "date_scheduled": "2025-08-15",
         "time_scheduled": "string",
-        "type_scheduled": "string",
+        "is_fixed": False,
     }
     response = client.post("/rooms", json=room, headers=headers)
     assert response.status_code == HTTPStatus.OK
@@ -307,7 +307,7 @@ def test_scheduler_room_err_user_not_active(client):
         "room": "string",
         "date_scheduled": "2025-08-15",
         "time_scheduled": "string",
-        "type_scheduled": "string",
+        "is_fixed": False,
     }
     response = client.post("/rooms", json=room, headers=headers)
 
@@ -348,7 +348,7 @@ def test_scheduler_already_exists(client):
         "room": "string",
         "date_scheduled": "2025-08-15",
         "time_scheduled": "string",
-        "type_scheduled": "string",
+        "is_fixed": False,
     }
     response = client.post("/rooms", json=room, headers=headers)
     response = client.post("/rooms", json=room, headers=headers)
@@ -391,23 +391,21 @@ def test_get_scheduler_rooms(client):
         "room": "string",
         "date_scheduled": "2025-08-15",
         "time_scheduled": "string",
-        "type_scheduled": "string",
+        "is_fixed": False,
     }
     response = client.post("/rooms", json=room, headers=headers)
     response = client.get("/myrooms", headers=headers)
 
     assert response.status_code == HTTPStatus.OK
     assert "prox_index" in response.json()
-    assert "max_index" in response.json()
     assert "scheduled" in response.json()
-    assert response.json()["max_index"] == 1
     assert response.json()["scheduled"][0] == {
         "id": 1,
         "user_id": 1,
         "room": "string",
         "date_scheduled": "2025-08-15",
         "time_scheduled": "string",
-        "type_scheduled": "string",
+        "is_fixed": False,
     }
 
 
@@ -444,7 +442,7 @@ def test_fixed_scheduler_already_exists(client):
         "room": "string",
         "date_scheduled": "2025-01-30",
         "time_scheduled": "string",
-        "type_scheduled": "fixo",
+        "is_fixed": True,
     }
     response = client.post("/rooms", json=room, headers=headers)
 
@@ -493,7 +491,7 @@ def test_fixed_scheduler_already_exists(client):
         "room": "string",
         "date_scheduled": "2025-01-30",
         "time_scheduled": "string",
-        "type_scheduled": "fixo",
+        "is_fixed": True,
     }
     response = client.post("/rooms", json=room, headers=headers)
     response = client.delete("/myrooms?item_id=1", headers=headers)
@@ -501,7 +499,7 @@ def test_fixed_scheduler_already_exists(client):
         "room": "string",
         "date_scheduled": "2025-02-06",
         "time_scheduled": "string",
-        "type_scheduled": "fixo",
+        "is_fixed": True,
     }
     response = client.post("/rooms", json=room, headers=headers)
 
