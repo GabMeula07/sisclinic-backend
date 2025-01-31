@@ -12,7 +12,7 @@ COPY pyproject.toml poetry.lock* ./
 
 # Instala as dependências do projeto (apenas produção)
 RUN poetry config virtualenvs.create false && \
-    poetry install --without dev
+    poetry install --without dev --no-root
 
 # Copia o restante do código-fonte
 COPY . .
