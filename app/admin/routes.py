@@ -1,6 +1,10 @@
+from typing import Optional
+
 from fastapi import APIRouter, Depends, Query
 
 from app.admin.controllers import (
+    closing_fixed_month_controller,
+    closing_of_the_month_controller,
     get_all_scheduler_controller,
     get_all_users_admin_controller,
     get_sheduler_user_data_controller,
@@ -85,3 +89,29 @@ def get_all_scheduler_events(
         data_max=data_max,
     )
     return schedulers
+
+
+@admin_routes.get("/closing/month/{user_id}")
+def closing_of_the_month(
+    user_id: int,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+    month: Optional[int] = Query(None),
+    year: Optional[int] = Query(None),
+):
+    return closing_of_the_month_controller(
+        session, current_user, user_id, month, year
+    )
+
+
+@admin_routes.get("/closing/month1/{user_id}")
+def closing_of_the_month(
+    user_id: int,
+    session=Depends(get_session),
+    current_user=Depends(get_current_user),
+    month: Optional[int] = Query(None),
+    year: Optional[int] = Query(None),
+):
+    return closing_fixed_month_controller(
+        session, current_user, user_id, month, year
+    )

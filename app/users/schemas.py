@@ -53,7 +53,7 @@ class SchedulerRequestSchema(BaseModel):
     room: str
     date_scheduled: date
     time_scheduled: str
-    type_scheduled: str
+    is_fixed: bool
 
     @field_validator("date_scheduled", mode="before")
     def validate_date(cls, value):
@@ -65,20 +65,20 @@ class SchedulerRequestSchema(BaseModel):
         return value
 
 
-class SchedulerListSchema(BaseModel):
-    scheduled: List[SchedulerRequestSchema]
-    msg: str
-
-
 class ScheduledSchema(BaseModel):
     id: int
     user_id: int
     room: str
     date_scheduled: date
     time_scheduled: str
-    type_scheduled: str
+    is_fixed: bool
 
 
 class ScheduledAdminListSchema(BaseModel):
     prox_index: int | None = None
     scheduled: list[ScheduledSchema]
+
+
+class SchedulerListSchema(BaseModel):
+    scheduled: List[ScheduledSchema]
+    msg: str

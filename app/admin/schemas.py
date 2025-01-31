@@ -43,12 +43,12 @@ class ScheduledSchema(BaseModel):
     type_scheduled: str
 
     class Config:
-        orm_mode = True
-        from_attributes=True
+        from_attributes = True
+
 
 class SchedulerListAdmin(BaseModel):
     prox_index: int | None = None
     scheduled: List[ScheduledSchema]
-    
+
     class Config:
-        orm_mode = True
+        from_attributes = True
