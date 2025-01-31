@@ -10,9 +10,9 @@ RUN pip install --upgrade pip && \
 # Copia os arquivos de dependências
 COPY pyproject.toml poetry.lock* ./
 
-# Instala as dependências do projeto
+# Instala as dependências do projeto (apenas produção)
 RUN poetry config virtualenvs.create false && \
-    poetry install --no-root --no-dev
+    poetry install --without dev
 
 # Copia o restante do código-fonte
 COPY . .
