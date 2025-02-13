@@ -1,9 +1,9 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from http import HTTPStatus
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import and_, extract, func, select
+from sqlalchemy.sql import and_, extract, func, select, or_
 
 from app.config.models import (
     ProfessionalRecord,
@@ -268,3 +268,179 @@ def get_scheduler_by_id(session: Session, scheduler_id: int):
         )
 
     return scheduler
+
+
+from collections import defaultdict
+
+def get_available_rooms_and_times(session: Session, target_date: datetime): 
+    target_date = target_date.date()
+    month = target_date.month
+    year = target_date.year
+
+    all_possible_times = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
+    rooms = [f'Sala {i:02}' for i in range(1, 7)]  
+    date_fixed = session.scalars(select(Schedule.date_scheduled).where(
+        and_(
+            Schedule.active == True, 
+            Schedule.is_fixed == True
+        )
+    )).all()
+
+    dates_generated = set()
+    for _date in date_fixed:
+        dates_generated.update(get_dates_with_same_weekday(_date, month, year))
+
+    has_fixed_schedules = target_date in dates_generated
+
+    normal_schedules = session.execute(select(Schedule).where(
+        and_(
+            Schedule.active == True, 
+            Schedule.is_fixed == False,
+            Schedule.date_scheduled == target_date
+        )
+    )).scalars().all()
+
+    # Dicionário para armazenar horários ocupados por sala
+    schedules_dict = defaultdict(lambda: {"normal": [], "fixed": []})
+
+    # Processar agendamentos normais
+    for schedule in normal_schedules:
+        schedules_dict[schedule.room]["normal"].append(schedule.time_scheduled)
+
+    # Se há agendamentos fixos para a data, buscar quais são
+    if has_fixed_schedules:
+        fixed_schedules = session.execute(select(Schedule).where(
+            and_(
+                Schedule.active == True,
+                Schedule.is_fixed == True
+            )
+        )).scalars().all()
+
+        for schedule in fixed_schedules:
+            if schedule.date_scheduled in dates_generated:  # Considerar apenas os fixos na mesma semana/mês
+                schedules_dict[schedule.room]["fixed"].append(schedule.time_scheduled)
+
+    # Determinar horários disponíveis por sala
+    available_rooms = {}
+    for room in rooms:
+        occupied_times = schedules_dict[room]["normal"] + schedules_dict[room]["fixed"]
+        available_times = [time for time in all_possible_times if time not in occupied_times]
+
+        if available_times:
+            available_rooms[room] = available_times
+
+    return available_rooms
+
+
+
+def get_dates_with_same_weekday(date: datetime.date, month: int, year: int):
+    """
+    Retorna todas as datas de um mês e ano fornecidos que têm o mesmo dia da semana da data fornecida.
+
+    Args:
+        date (datetime.date): A data de referência para determinar o dia da semana.
+        month (int): O mês desejado.
+        year (int): O ano desejado.
+
+    Returns:
+        list[datetime.date]: Uma lista contendo todas as datas do mês que têm o mesmo dia da semana.
+    """
+    # Garantir que a data seja um objeto do tipo `datetime.date`
+    if isinstance(date, datetime):
+        date = date.date()
+
+    # Primeiro dia do mês fornecido
+    first_day = datetime(year, month, 1).date()
+
+    # Último dia do mês fornecido
+    next_month = (month % 12) + 1
+    next_month_year = year + (1 if next_month == 1 else 0)
+    last_day = datetime(next_month_year, next_month, 1).date() - timedelta(
+        days=1
+    )
+
+    # Primeiro dia do mês com o mesmo dia da semana da data fornecida
+    first_matching_day = first_day + timedelta(
+        days=(date.weekday() - first_day.weekday()) % 7
+    )
+
+    # Gera todas as datas com o mesmo dia da semana no mês fornecido
+    return [
+        first_matching_day + timedelta(weeks=i)
+        for i in range((last_day - first_matching_day).days // 7 + 1)
+    ]
+
+
+def closing_fixed_month(session: Session, user_id, month, year):
+    now = datetime.now(timezone.utc)
+
+    if month is None:
+        month = now.month
+    if year is None:
+        year = now.year
+
+    first_day = datetime(year, month, 1)
+    next_month = (month % 12) + 1
+    next_month_year = year + (1 if next_month == 1 else 0)
+    last_day = datetime(next_month_year, next_month, 1) - timedelta(days=1)
+
+    query = (
+        select(Schedule)
+        .outerjoin(
+            ScheduleDeactivation,
+            Schedule.id == ScheduleDeactivation.schedule_id,
+        )
+        .where(
+            or_(
+                and_(
+                    Schedule.active == True,
+                    Schedule.is_fixed == True,
+                    Schedule.user_id == user_id,
+                ),
+                and_(
+                    ScheduleDeactivation.deactivation_date >= first_day,
+                    ScheduleDeactivation.deactivation_date <= last_day,
+                    ScheduleDeactivation.user_id == user_id,
+                ),
+            )
+        )
+    )
+
+    results = session.scalars(query).all()
+
+    return results
+
+
+def clean_group_date(session: Session, user_id, scheduler: dict):
+    filtered_dates = [
+        date
+        for date in scheduler["dates_generate"]
+        if date >= scheduler["date_fixed"]
+    ]
+
+    date_canceled_result = (
+        session.execute(
+            select(ScheduleDeactivation.deactivation_date).where(
+                and_(
+                    ScheduleDeactivation.user_id == user_id,
+                    ScheduleDeactivation.schedule_id == scheduler["id"],
+                )
+            )
+        )
+        .scalars()
+        .first()
+    )
+
+    if date_canceled_result:
+        if isinstance(date_canceled_result, date):
+            date_canceled_result = datetime.combine(
+                date_canceled_result, datetime.min.time()
+            )
+
+        filtered_dates = [
+            date
+            for date in filtered_dates
+            if date <= date_canceled_result.date()
+        ]
+
+    return filtered_dates

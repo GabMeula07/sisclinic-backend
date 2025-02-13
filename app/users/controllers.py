@@ -15,6 +15,7 @@ from app.users.cruds import (
     get_scheduler_by_id,
     get_scheduler_by_user_id,
     get_user_by_email,
+    get_available_rooms_and_times
 )
 from app.users.schemas import (
     ProfileSchema,
@@ -173,3 +174,6 @@ def delete_user_scheduler_controller(
         session=session, current_user_id=current_user_id, schedule=scheduler
     )
     return data
+
+def get_times_by_date_controller(session, date): 
+    return get_available_rooms_and_times(session=session, target_date=date)

@@ -1,7 +1,10 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Depends, Form, Query
+from fastapi import APIRouter, Depends, Form, Query, HTTPException
 from sqlalchemy.orm import Session
+
+from typing import List, Dict
+from datetime import datetime
 
 from app.config.database import get_session
 from app.users.controllers import (
@@ -13,6 +16,7 @@ from app.users.controllers import (
     get_professional_profile_controller,
     get_user_scheduled_controller,
     login_user_controller,
+    get_times_by_date_controller
 )
 from app.users.schemas import (
     ProfileSchema,
@@ -165,3 +169,20 @@ async def delete_scheduler(
     )
 
     return {"scheduled": [data], "msg": "deleted"}
+
+
+
+@user_routes.get("/available-times/")
+def available_times(target_date: str, db: Session = Depends(get_session), current_user = Depends(get_current_user)) -> Dict[str, List[str]]:
+    try:
+        # Converte a string para um objeto datetime
+        target_date = datetime.strptime(target_date, "%Y-%m-%d")
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Data inválida. Formato esperado: YYYY-MM-DD")
+    
+    available_rooms = get_times_by_date_controller(db, target_date)
+
+    if not available_rooms:
+        raise HTTPException(status_code=404, detail="Nenhum horário disponível encontrado para a data informada")
+
+    return available_rooms
